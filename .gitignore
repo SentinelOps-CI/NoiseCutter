@@ -1,0 +1,17 @@
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.DS_Store
+*.sarif
+*.cdx.json
+*.json
+.idea/
+.vscode/
+
+

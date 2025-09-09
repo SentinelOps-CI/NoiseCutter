@@ -1,0 +1,5 @@
+min_severity: HIGH
+fail_on: reachable
+exceptions: []
+
+
