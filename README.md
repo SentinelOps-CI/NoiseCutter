@@ -2,7 +2,7 @@
   <img src="docs/assets/noisecutter-hero.svg" alt="NoiseCutter hero" width="820" />
 </p>
 
-NoiseCutter — Prove what’s exploitable; ignore the rest
+NoiseCutter - Prove what’s exploitable; ignore the rest
 ======================================================
 
 Mission: Cut vuln noise to near-zero by proving which CVEs are actually callable from your app’s entry points, using open CLIs, reproducible SBOMs, and CI-first workflows.
