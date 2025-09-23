@@ -9,8 +9,10 @@ __pycache__/
 .ruff_cache/
 .DS_Store
 *.sarif
-*.cdx.json
-*.json
+sbom.cdx.json
+reach.json
+vulns.json
+report.sarif
 .idea/
 .vscode/
 

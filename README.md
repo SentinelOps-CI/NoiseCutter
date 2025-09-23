@@ -7,36 +7,59 @@ NoiseCutter - Prove what’s exploitable; ignore the rest
 
 Mission: Cut vuln noise to near-zero by proving which CVEs are actually callable from your app’s entry points, using open CLIs, reproducible SBOMs, and CI-first workflows.
 
-Quickstart
-----------
+## Quickstart
 
-Install:
+### Install
 
 ```bash
 pip install noisecutter
 ```
 
-Windows note: If the console shim misbehaves, prefer `python -m noisecutter`.
+### Run
+
+```bash
+noisecutter --help
+```
+
+### Docker Alternative
+
+```bash
+docker run --rm ghcr.io/noisecutter/noisecutter:latest --help
+```
+
+### Complete Workflow Example
 
 Fast path (repo SBOM → audit → reach → SARIF → policy):
 
 ```bash
-python -m noisecutter sbom --source . --out sbom.cdx.json
-python -m noisecutter audit --sbom sbom.cdx.json --out vulns.json
-python -m noisecutter reach --lang go --entry ./examples/go-mod-sample/cmd/server \
+# Generate SBOM
+noisecutter sbom --source . --out sbom.cdx.json
+
+# Audit for vulnerabilities
+noisecutter audit --sbom sbom.cdx.json --out vulns.json
+
+# Check reachability (Go example)
+noisecutter reach --lang go --entry ./examples/go-mod-sample/cmd/server \
   --vulns vulns.json --out reach.json
-python -m noisecutter fuse --sbom sbom.cdx.json --vulns vulns.json --reach reach.json --out report.sarif
-python -m noisecutter policy --sarif report.sarif --level high --fail-on reachable
+
+# Generate SARIF report
+noisecutter fuse --sbom sbom.cdx.json --vulns vulns.json --reach reach.json --out report.sarif
+
+# Apply policy
+noisecutter policy --sarif report.sarif --level high --fail-on reachable
 ```
 
-Go recipe prerequisites:
+### Prerequisites
+
+**Go workflow:**
 - Go toolchain installed
 - `govulncheck` installed: `go install golang.org/x/vuln/cmd/govulncheck@latest`
 - In example module, run once: `cd examples/go-mod-sample && go mod tidy`
 
-Windows specifics:
+**Windows specifics:**
 - Ensure `syft` is on PATH or set `SYFT_EXE=C:\path\to\syft.exe`
 - If you hit encoding issues, set `set PYTHONIOENCODING=utf-8` and `chcp 65001`
+- If the console shim misbehaves, prefer `python -m noisecutter`
 
 Reproducibility
 ---------------

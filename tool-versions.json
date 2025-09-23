@@ -1,0 +1,6 @@
+{
+  "syft": "v1.16.0",
+  "govulncheck": "latest",
+  "python": "3.x"
+}
+
