@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import logging
 import logging.config
-from logging.handlers import RotatingFileHandler
 import os
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Optional
-
+from typing import Any, cast
 
 LOG_LEVELS = {
     "error": logging.ERROR,
@@ -30,7 +29,7 @@ class JsonFormatter(logging.Formatter):
             record,
             datefmt="%Y-%m-%dT%H:%M:%S",
         )
-        event = {
+        event: dict[str, Any] = {
             "time": event_time,
             "level": record.levelname,
             "logger": record.name,
@@ -61,8 +60,8 @@ class JsonFormatter(logging.Formatter):
         for key, val in record.__dict__.items():
             if key not in std and not key.startswith("_"):
                 event[key] = val
-        event = _apply_redaction(event)
-        return _json.dumps(event, separators=(",", ":"))
+        redacted = _apply_redaction(event)
+        return _json.dumps(cast(dict[str, Any], redacted), separators=(",", ":"))
 
 
 def _apply_redaction(obj: object) -> object:
@@ -84,16 +83,16 @@ def _apply_redaction(obj: object) -> object:
     return redact_val(obj)
 
 
-def setup_logging(level: Optional[str]) -> None:
+def setup_logging(level: str | None) -> None:
     # Add TRACE level
     if not hasattr(logging, "TRACE"):
         logging.TRACE = 5  # type: ignore[attr-defined]
-        logging.addLevelName(logging.TRACE, "TRACE")  # type: ignore[arg-type]
+        logging.addLevelName(5, "TRACE")
 
     # Centralized config file support
     cfg_path = os.environ.get("NOISECUTTER_LOGGING_CONFIG")
     if cfg_path and Path(cfg_path).exists():
-        logging.config.fileConfig(cfg_path)  # type: ignore[arg-type]
+        logging.config.fileConfig(cfg_path)
         return
 
     chosen = level or ("error" if _is_ci() else "info")
@@ -122,9 +121,9 @@ def setup_logging(level: Optional[str]) -> None:
     if json_env in json_flags:
         json_fmt = JsonFormatter()
         root_logger = logging.getLogger()
-        for handler in list(root_logger.handlers):
-            if isinstance(handler, logging.StreamHandler):
-                handler.setFormatter(json_fmt)
+        for stream_handler in list(root_logger.handlers):
+            if isinstance(stream_handler, logging.StreamHandler):
+                stream_handler.setFormatter(json_fmt)
 
 
 def get_logger(name: str) -> logging.Logger:

@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "NoiseCutter",
+          "informationUri": "https://github.com/noisecutter/noisecutter",
+          "version": "0.1.0"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "GHSA-aaaa-1111-2222",
+          "level": "error",
+          "message": {
+            "text": "GHSA-aaaa-1111-2222 in acme-lib@1.0.0"
+          },
+          "locations": [],
+          "properties": {
+            "severity": "HIGH",
+            "package": "acme-lib",
+            "version": "1.0.0",
+            "reachable": true,
+            "callPaths": [["main.run", "handler.Serve"]],
+            "evidence": {
+              "govulncheck": "stub"
+            },
+            "tool": {
+              "sbom": []
+            }
+          },
+          "partialFingerprints": {
+            "purl": "pkg:golang/acme-lib@1.0.0",
+            "vulnId": "GHSA-aaaa-1111-2222"
+          },
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "message": {
+                          "text": "main.run"
+                        }
+                      }
+                    },
+                    {
+                      "location": {
+                        "message": {
+                          "text": "handler.Serve"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "pkg:golang/acme-lib@1.0.0"
+          }
+        }
+      ],
+      "properties": {
+        "noisecutter:versions": {
+          "noisecutter": "0.1.0"
+        }
+      }
+    }
+  ]
+}

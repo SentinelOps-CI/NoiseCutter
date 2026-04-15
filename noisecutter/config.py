@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import yaml
 from pydantic import BaseModel, Field
@@ -10,17 +10,17 @@ from pydantic import BaseModel, Field
 
 class SBOMConfig(BaseModel):
     tool: str = Field(default="syft")
-    args: List[str] = Field(default_factory=list)
+    args: list[str] = Field(default_factory=list)
 
 
 class AuditConfig(BaseModel):
     tool: str = Field(default="osv")
-    args: List[str] = Field(default_factory=list)
+    args: list[str] = Field(default_factory=list)
 
 
 class ReachConfig(BaseModel):
     lang: str = Field(default="go")
-    entry: List[str] = Field(default_factory=list)
+    entry: list[str] = Field(default_factory=list)
     tool: str = Field(default="govulncheck")
 
 
@@ -31,11 +31,11 @@ class FuseConfig(BaseModel):
 class PolicyConfig(BaseModel):
     level: str = Field(default="high")
     fail_on: str = Field(default="reachable")
-    max_total_findings: Optional[int] = None
-    max_reachable_findings: Optional[int] = None
-    exclude_rules: List[str] = Field(default_factory=list)
-    exclude_modules: List[str] = Field(default_factory=list)
-    only_levels: List[str] = Field(default_factory=list)
+    max_total_findings: int | None = None
+    max_reachable_findings: int | None = None
+    exclude_rules: list[str] = Field(default_factory=list)
+    exclude_modules: list[str] = Field(default_factory=list)
+    only_levels: list[str] = Field(default_factory=list)
 
 
 class AppConfig(BaseModel):
@@ -54,10 +54,10 @@ def _default_config_path(start_dir: Path) -> Path:
     return start_dir / ".noisecutter.yaml"
 
 
-def load_config(repo_root: Optional[Path] = None) -> AppConfig:
+def load_config(repo_root: Path | None = None) -> AppConfig:
     root = repo_root or Path.cwd()
     cfg_path = _default_config_path(root)
-    data: Dict[str, Any] = {}
+    data: dict[str, Any] = {}
     if cfg_path.exists():
         # Use safe loader, assume UTF-8
         text = cfg_path.read_text(encoding="utf-8")

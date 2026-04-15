@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 
 class PolicyLevel(str, Enum):
@@ -38,12 +38,12 @@ def evaluate_policy(
     sarif_path: Path,
     min_level: PolicyLevel,
     fail_on: FailOn,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     sarif = json.loads(sarif_path.read_text())
     results = sarif.get("runs", [{}])[0].get("results", [])
 
     min_order = _ORDER[min_level]
-    violations: List[Dict[str, Any]] = []
+    violations: list[dict[str, Any]] = []
     for r in results:
         level = r.get("level", "note")  # noqa: F841
         props = r.get("properties", {})

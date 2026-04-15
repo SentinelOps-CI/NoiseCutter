@@ -5,7 +5,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, cast
 
 from ..cache import Cache
 from ..logging_utils import get_logger
@@ -39,8 +39,10 @@ def _syft_version(syft_path: str) -> str:
             capture_output=True,
             text=True,
         )
-        data = json.loads(proc.stdout)
-        return (data.get("version") or {}).get("version", "unknown")
+        data = cast(dict[str, Any], json.loads(proc.stdout))
+        ver_block = data.get("version")
+        inner = ver_block if isinstance(ver_block, dict) else {}
+        return str(inner.get("version", "unknown"))
     except Exception:
         try:
             proc = subprocess.run(
@@ -71,10 +73,10 @@ def _git_sha_for_path(path: Path) -> str:
 
 
 def generate_sbom(
-    source_path: Optional[Path],
-    image_ref: Optional[str],
-    cache: Optional[Cache] = None,
-) -> Dict[str, Any]:
+    source_path: Path | None,
+    image_ref: str | None,
+    cache: Cache | None = None,
+) -> dict[str, Any]:
     syft = _ensure_syft()
     target = None
     if image_ref:
@@ -98,11 +100,11 @@ def generate_sbom(
         "cyclonedx-json",
     ]
     proc = subprocess.run(cmd, check=True, capture_output=True, text=True)
-    doc = json.loads(proc.stdout)
+    doc = cast(dict[str, Any], json.loads(proc.stdout))
     # Normalize timestamp for reproducibility if SOURCE_DATE_EPOCH is set
     try:
-        import os
         import datetime as _dt
+        import os
 
         epoch = os.environ.get("SOURCE_DATE_EPOCH")
         if epoch:

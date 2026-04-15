@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, List, TypedDict, TypeAlias
+from typing import Any, TypedDict
+
+from typing_extensions import TypeAlias
 
 
 class Severity(str, Enum):
@@ -15,9 +17,9 @@ class Severity(str, Enum):
 class ReachabilityRecord(TypedDict, total=False):
     id: str
     reachable: bool
-    callPaths: List[List[str]]
-    evidence: Dict[str, Any]
+    callPaths: list[list[str]]
+    evidence: dict[str, Any]
 
 
-SarifResult: TypeAlias = Dict[str, Any]
-SarifLog: TypeAlias = Dict[str, Any]
+SarifResult: TypeAlias = dict[str, Any]
+SarifLog: TypeAlias = dict[str, Any]

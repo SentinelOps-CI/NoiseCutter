@@ -15,5 +15,8 @@ vulns.json
 report.sarif
 .idea/
 .vscode/
-
+.coverage
+.coverage.*
+htmlcov/
+.noisecutter-cache/
 

@@ -51,7 +51,7 @@ lint:
 # Format code
 format:
 	@echo "Formatting code..."
-	black .
+	ruff format .
 	ruff check --fix .
 
 # Clean build artifacts

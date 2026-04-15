@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 
 def _stable_json_dumps(data: Any) -> str:
@@ -18,6 +18,6 @@ def _stable_json_dumps(data: Any) -> str:
     )
 
 
-def write_json_deterministic(path: Path, data: Dict[str, Any]) -> None:
+def write_json_deterministic(path: Path, data: dict[str, Any]) -> None:
     text = _stable_json_dumps(data)
-    path.write_text(text, encoding="utf-8", newline="\n")
+    path.write_bytes(text.encode("utf-8"))

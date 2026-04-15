@@ -1,0 +1,31 @@
+[files]
+extend-exclude = [
+    "examples/**",
+    "testdata/**",
+    "*.sarif",
+    "uv.lock",
+]
+
+[default.extend-words]
+noisecutter = "noisecutter"
+govulncheck = "govulncheck"
+cyclonedx = "cyclonedx"
+sbom = "sbom"
+sarif = "sarif"
+purl = "purl"
+osv = "osv"
+syft = "syft"
+httpx = "httpx"
+pydantic = "pydantic"
+typer = "typer"
+pypi = "pypi"
+npm = "npm"
+golang = "golang"
+reachability = "reachability"
+devsecops = "devsecops"
+callpaths = "callpaths"
+threadflows = "threadflows"
+codeflows = "codeflows"
+fingerprints = "fingerprints"
+jsonschema = "jsonschema"
+schemastore = "schemastore"

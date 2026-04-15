@@ -1,0 +1,12 @@
+{
+  "records": [
+    {
+      "id": "GHSA-aaaa-1111-2222",
+      "reachable": true,
+      "callPaths": [["main.run", "handler.Serve"]],
+      "evidence": {
+        "govulncheck": "stub"
+      }
+    }
+  ]
+}

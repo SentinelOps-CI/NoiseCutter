@@ -1,23 +1,21 @@
 from __future__ import annotations
 
-import sys
 from pathlib import Path
-from typing import Optional
 
+import click
 import typer
 from rich import print
 
-from .core.fuse import fuse_to_sarif, write_summary_txt
-from .core.policy import evaluate_policy, PolicyLevel, FailOn
-from .integrations.syft_adapter import generate_sbom
-from .integrations.osv_adapter import audit_osv
-from .integrations.go.govulncheck_adapter import compute_reachability_go
+from .cache import Cache
 from .config import load_config
+from .core.fuse import fuse_to_sarif, write_summary_txt
+from .core.policy import FailOn, PolicyLevel, evaluate_policy
+from .exit_codes import INVALID_INPUT, POLICY_FAILURE, TOOL_FAILURE
+from .integrations.go.govulncheck_adapter import compute_reachability_go
+from .integrations.osv_adapter import audit_osv
+from .integrations.syft_adapter import generate_sbom
 from .logging_utils import setup_logging
 from .utils import write_json_deterministic
-from .exit_codes import POLICY_FAILURE, TOOL_FAILURE, INVALID_INPUT
-from .cache import Cache
-
 
 app = typer.Typer(help=("NoiseCutter — prove what’s exploitable; ignore the rest."))
 
@@ -25,17 +23,17 @@ app = typer.Typer(help=("NoiseCutter — prove what’s exploitable; ignore the 
 @app.callback()
 def main_opts(
     ctx: typer.Context,
-    log_level: Optional[str] = typer.Option(
+    log_level: str | None = typer.Option(
         None,
         "--log-level",
         help="error|warn|info|debug|trace",
     ),
-    config_repo: Optional[Path] = typer.Option(
+    config_repo: Path | None = typer.Option(
         None,
         "--repo",
         help="Repo root for config discovery",
     ),
-    strict_repro: Optional[bool] = typer.Option(
+    strict_repro: bool | None = typer.Option(
         None,
         help=("Deterministic outputs; also honors NOISECUTTER_STRICT_REPRO"),
     ),
@@ -49,14 +47,14 @@ def main_opts(
 
 @app.command()
 def sbom(
-    source: Optional[Path] = typer.Option(
+    source: Path | None = typer.Option(
         None,
         exists=True,
         file_okay=False,
         dir_okay=True,
         help="Path to source repo",
     ),
-    image: Optional[str] = typer.Option(
+    image: str | None = typer.Option(
         None,
         help="Container image ref (name@digest)",
     ),
@@ -70,10 +68,10 @@ def sbom(
         doc = generate_sbom(
             source_path=source,
             image_ref=image,
-            cache=typer.get_current_context().obj.get("cache"),
+            cache=click.get_current_context().obj.get("cache"),
         )
     except RuntimeError as exc:
-        print("[red]SBOM generation failed:[/red] " f"{exc}. Install syft and try again.")
+        print(f"[red]SBOM generation failed:[/red] {exc}. Install syft and try again.")
         raise typer.Exit(code=TOOL_FAILURE)
     write_json_deterministic(out, doc)
     print(f"[green]SBOM written:[/green] {out}")
@@ -94,7 +92,7 @@ def audit(
     """Enrich SBOM components with OSV advisories."""
     res = audit_osv(
         sbom_path=sbom,
-        cache=typer.get_current_context().obj.get("cache"),
+        cache=click.get_current_context().obj.get("cache"),
     )
     write_json_deterministic(out, res)
     print(f"[green]Vulns written:[/green] {out}")
@@ -105,7 +103,7 @@ def reach(
     lang: str = typer.Option(..., help="Language (e.g., go)"),
     entry: Path = typer.Option(..., exists=True, help="Entry point (e.g., ./cmd/server)"),
     vulns: Path = typer.Option(..., exists=True, help="Vulnerabilities JSON"),
-    coverage: Optional[Path] = typer.Option(None, exists=True, help="Optional coverage file"),
+    coverage: Path | None = typer.Option(None, exists=True, help="Optional coverage file"),
     out: Path = typer.Option(Path("reach.json"), help="Output reachability JSON"),
 ) -> None:
     """Determine reachability for advisories."""
@@ -115,10 +113,10 @@ def reach(
                 entry_path=entry,
                 vulns_json=vulns,
                 coverage_path=coverage,
-                cache=typer.get_current_context().obj.get("cache"),
+                cache=click.get_current_context().obj.get("cache"),
             )
         except RuntimeError as exc:
-            print("[red]Reachability failed:[/red] " f"{exc}. Install govulncheck and try again.")
+            print(f"[red]Reachability failed:[/red] {exc}. Install govulncheck and try again.")
             raise typer.Exit(code=TOOL_FAILURE)
     else:
         print("[red]Language not supported yet[/red]")
@@ -182,7 +180,7 @@ cache_app = typer.Typer(help="Cache management")
 def cache_warm(
     ctx: typer.Context,
     source: Path = typer.Option(Path("."), exists=True, dir_okay=True, file_okay=False),
-    entries: Optional[str] = typer.Option(None, help="Comma-separated entry points for reach"),
+    entries: str | None = typer.Option(None, help="Comma-separated entry points for reach"),
 ) -> None:
     # cfg exists for future advanced warming logic
     _ = ctx.obj["config"]
@@ -216,4 +214,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":  # pragma: no cover
-    sys.exit(main())
+    main()

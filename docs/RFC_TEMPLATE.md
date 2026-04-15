@@ -2,16 +2,32 @@
 
 ## Summary
 
+One paragraph: what is being proposed?
+
 ## Motivation
 
-## Detailed Design
+What problem does this solve? Who is affected?
 
-## Alternatives Considered
+## Detailed design
 
-## Security Considerations
+API changes, data formats, CLI flags, migration steps.
 
-## Rollout Plan
+## Alternatives considered
+
+What else was evaluated and why it was not chosen?
+
+## Security considerations
+
+Threats, trust boundaries, supply-chain or privacy impact.
+
+## Rollout plan
+
+Phases, feature flags, deprecation timeline.
+
+## References
+
+Links to issues, prior art, and related docs (`docs/`, ADRs if any).
 
 ## Appendix
 
-
+Optional diagrams, examples, or extended rationale.

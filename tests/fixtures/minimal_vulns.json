@@ -1,0 +1,13 @@
+{
+  "vulnerabilities": [
+    {
+      "id": "GHSA-aaaa-1111-2222",
+      "severity": "HIGH",
+      "package": {
+        "name": "acme-lib",
+        "version": "1.0.0",
+        "purl": "pkg:golang/acme-lib@1.0.0"
+      }
+    }
+  ]
+}

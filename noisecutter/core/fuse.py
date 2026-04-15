@@ -2,13 +2,42 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, cast
 
+from .. import __version__
 from .types import SarifLog, SarifResult
 
 
-def _read_json(path: Path) -> Dict[str, Any]:
-    return json.loads(path.read_text())
+def validate_sarif_structure(doc: SarifLog) -> None:
+    """Validate minimal SARIF 2.1.0 structure required by NoiseCutter outputs."""
+    if doc.get("$schema") != "https://json.schemastore.org/sarif-2.1.0.json":
+        raise ValueError("SARIF $schema must be json.schemastore.org sarif-2.1.0")
+    if doc.get("version") != "2.1.0":
+        raise ValueError("SARIF version must be 2.1.0")
+    runs = doc.get("runs")
+    if not isinstance(runs, list) or not runs:
+        raise ValueError("SARIF runs must be a non-empty list")
+    run0 = runs[0]
+    driver = ((run0.get("tool") or {}).get("driver")) or {}
+    if not driver.get("name"):
+        raise ValueError("SARIF tool.driver.name is required")
+    results = run0.get("results")
+    if not isinstance(results, list):
+        raise ValueError("SARIF results must be a list")
+    for i, r in enumerate(results):
+        if not isinstance(r, dict):
+            raise ValueError(f"SARIF results[{i}] must be an object")
+        if not r.get("ruleId"):
+            raise ValueError(f"SARIF results[{i}].ruleId is required")
+        if not r.get("level"):
+            raise ValueError(f"SARIF results[{i}].level is required")
+        msg = r.get("message")
+        if not isinstance(msg, dict) or not msg.get("text"):
+            raise ValueError(f"SARIF results[{i}].message.text is required")
+
+
+def _read_json(path: Path) -> dict[str, Any]:
+    return cast(dict[str, Any], json.loads(path.read_text()))
 
 
 def _severity_to_level(sev: str) -> str:
@@ -20,8 +49,8 @@ def _severity_to_level(sev: str) -> str:
     return "note"
 
 
-def _make_code_flows(call_paths: List[List[str]]) -> List[Dict[str, Any]]:
-    flows: List[Dict[str, Any]] = []
+def _make_code_flows(call_paths: list[list[str]]) -> list[dict[str, Any]]:
+    flows: list[dict[str, Any]] = []
     if not call_paths:
         return flows
     for path in call_paths:
@@ -43,7 +72,7 @@ def fuse_to_sarif(
 
     reach_map = {r.get("id"): r for r in reach.get("records", [])}
 
-    results: List[SarifResult] = []
+    results: list[SarifResult] = []
     for v in vulns.get("vulnerabilities", []):
         vuln_id = v.get("id") or v.get("cve") or v.get("osvId")
         severity = (v.get("severity") or "LOW").upper()
@@ -99,8 +128,8 @@ def fuse_to_sarif(
                 "tool": {
                     "driver": {
                         "name": "NoiseCutter",
-                        "informationUri": ("https://github.com/your-org/noisecutter"),
-                        "version": "0.1.0",
+                        "informationUri": "https://github.com/noisecutter/noisecutter",
+                        "version": __version__,
                     }
                 },
                 "results": results,
@@ -111,15 +140,16 @@ def fuse_to_sarif(
                     ]
                     if p.get("package", {}).get("purl")
                 ],
-                "properties": {"noisecutter:versions": {"noisecutter": "0.1.0"}},
+                "properties": {"noisecutter:versions": {"noisecutter": __version__}},
             }
         ],
     }
+    validate_sarif_structure(sarif)
     return sarif
 
 
 def write_summary_txt(sarif_doc: SarifLog, out_path: Path) -> None:
-    rows: List[str] = []
+    rows: list[str] = []
     header = "package\tversion\tvuln\tlevel\treachable\tentrypoints\tcodeflow_count"
     rows.append(header)
     results = sarif_doc.get("runs", [{}])[0].get("results", [])
@@ -132,6 +162,6 @@ def write_summary_txt(sarif_doc: SarifLog, out_path: Path) -> None:
         reachable = props.get("reachable")
         entrypoints = ",".join(sorted({path[0] for path in (props.get("callPaths") or []) if path}))
         codeflows = len(r.get("codeFlows", []))
-        row = f"{pkg}\t{ver}\t{vuln}\t{level}\t{reachable}" f"\t{entrypoints}\t{codeflows}"
+        row = f"{pkg}\t{ver}\t{vuln}\t{level}\t{reachable}\t{entrypoints}\t{codeflows}"
         rows.append(row)
     out_path.write_text("\n".join(rows), encoding="utf-8")
