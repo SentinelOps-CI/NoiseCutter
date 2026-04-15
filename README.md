@@ -42,21 +42,6 @@ flowchart LR
 
 ---
 
-### Contents
-
-- [Install](#install)
-- [Run a full pipeline](#run-a-full-pipeline)
-- [Prerequisites](#prerequisites)
-- [Reproducibility](#reproducibility)
-- [Samples](#samples)
-- [Configuration](#configuration)
-- [CI & automation](#ci--automation)
-- [Documentation](#documentation)
-- [Security](#security)
-- [License](#license)
-
----
-
 ### Install
 
 **From PyPI**
